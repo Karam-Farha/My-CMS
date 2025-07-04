@@ -4,8 +4,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\Localization;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebsiteController;
-use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\LocalizationController;
+use App\Http\Controllers\Auth\RegisterController;
 
 // Route::get('/login', function () {
 //     return redirect()->route('login');    
@@ -23,7 +24,7 @@ Route::middleware(Localization::class)->group(function(){
     
         //Dashboard
         Route::view('index' , 'Admin.index')->name('Admin.home');
-    
+        Route::delete('userss/delete/{id}' , [UserController::class , 'dest'])->name('users.dest');
         Route::get('user-profile' , function(){
     
         return view('Admin.users-profile')->with(['email' => auth()->user()->email]);})->name('user-profile');

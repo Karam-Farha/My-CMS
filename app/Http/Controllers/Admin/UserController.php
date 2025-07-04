@@ -3,34 +3,59 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Model;
+use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
+
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        if (!auth()->user()->hasRole('Admin')) abort(403, 'Sorry You Are Not authenticated');
-        $users = User::all();
+        if (!auth()->user()->can('user_access')) abort(403, __('Sorry You Are Not authenticated'));
+        if ($request->ajax()) {
+            $users = User::query();
+            return DataTables::eloquent($users)
+                ->addIndexColumn()
+                ->addColumn(__('photo'), function ($user) {
+                    return $this->prepareImg($user);
+                })
+                ->addColumn(__('actions'), function ($user) {
+                    return $this->prepareBtns($user);
+                })
+                ->addColumn('roles' , function($user){
+                    $res = '';
+                    foreach($user->roles as $role)
+                        $res = $res . '<div class="badge bg-primary">'.$role->name.'</div>';
+
+                    return $res;
+                })
+                ->rawColumns(['actions', 'DT_RowIndex', 'photo' , 'roles'])
+                ->make(true);
+        }
+        
         $pageTitle = [
             'title' => 'Users',
             'bread_crumbs' => [
                 [
-                    'title' => 'Home',
+                    'title' => __('Home'),
                     'link'  => route('Admin.home')
                 ],
                 [
-                    'title' => 'All Users',
+                    'title' => __('All Users'),
                     'link'  => route('users.index')
                 ],
             ]
         ];
-        return view('Admin.users.index', compact('pageTitle', 'users'));
+        return view('Admin.users.index', compact('pageTitle'));
     }
 
     /**
@@ -88,7 +113,6 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::all();
-        // dd('here');
         $pageTitle = [
             'title' => 'Edit User',
             'bread_crumbs' => [
@@ -117,8 +141,6 @@ class UserController extends Controller
         }
         $user->update($input);
         if ($request->hasFile('photo')) {
-            // if(!is_null($user->media()->first()))
-            // $user->media()->delete();
             $user->media()->each(function ($media) {
                 $media->delete(); // This deletes both DB record and file
             });
@@ -133,7 +155,18 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $user->delete();
-        return redirect()->route('users.index')->with(['danger' => __('Deleted successfully')]);
+        if (auth()->user()->can('user_delete')) {
+            if ($user) {
+                $user->media()->each(function ($media) {
+                    $media->delete();
+                });
+                $user->delete();
+                return response()->json(['status' => 200, 'msg' => __('Deleted successfully')]);
+            }
+            return response()->json(['status' => 404, 'msg' => __('Not Found')]);
+        }
+        abort(403, __('Sorry You Are Not authenticated'));
+
+        // return redirect()->route('users.index')->with(['danger' => __('Deleted successfully')]);
     }
 }
