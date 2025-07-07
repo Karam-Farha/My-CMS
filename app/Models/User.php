@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\Auditable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Notifications\Notifiable;
@@ -14,7 +15,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable , HasRoles , InteractsWithMedia;
+    use HasFactory, Notifiable , HasRoles , InteractsWithMedia ,Auditable;
 
     /**
      * The attributes that are mass assignable.
@@ -61,5 +62,10 @@ class User extends Authenticatable implements HasMedia
             return $image->getUrl();
         }
         return false;
+    }
+
+    public function getAuditlogsAttribute()
+    {
+        return AuditLog::where('subject_id', $this->id)->where('subject_type', get_class($this))->latest()->get();
     }
 }

@@ -78,6 +78,7 @@
                     @endforelse
                 </tbody>
                 </table>
+                {{$users->links()}}
                 <!-- End Bordered Table -->
             </div>
             </div>

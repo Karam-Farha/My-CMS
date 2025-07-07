@@ -16,7 +16,7 @@ class UserController extends Controller
     public function index()
     {
         if (!auth()->user()->hasRole('Admin')) abort(403, 'Sorry You Are Not authenticated');
-        $users = User::all();
+        $users = User::paginate(50);
         $pageTitle = [
             'title' => 'Users',
             'bread_crumbs' => [

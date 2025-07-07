@@ -4,8 +4,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\Localization;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WebsiteController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\LocalizationController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\AuditLogsController;
 
 // Route::get('/login', function () {
 //     return redirect()->route('login');    
@@ -37,7 +38,8 @@ Route::middleware(Localization::class)->group(function(){
         // Route::view('pages-register', 'dashboard.pages-register')->name('register');
     });
     
-    
+    Route::resource('audit-logs', AuditLogsController::class)->only(['index']);
+
     Auth::routes();
     
     Route::post('/otp/verify', [RegisterController::class , 'otpVerfication'])->name('opt-verifiy');

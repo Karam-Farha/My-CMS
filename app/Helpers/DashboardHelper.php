@@ -25,6 +25,13 @@ class DashboardHelper
                 'active' => request()->routeIs('users.*'),
                 'can'   => 'user_access',
             ],
+            [
+                'label' => __('Audit Logs'),
+                'prefixIcon' => 'bi bi-people',
+                'route' => route('audit-logs.index'),
+                'active' => request()->routeIs('audit-logs.index.*'),
+                'can'   => 'user_access',
+            ],
             
         ];
         return $_menuitems;
